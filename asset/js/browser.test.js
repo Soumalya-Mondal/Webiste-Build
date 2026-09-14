@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
-const { accessSync, constants, mkdtempSync, rmSync } = require("node:fs");
+const { accessSync, chmodSync, constants, mkdtempSync, rmSync, writeFileSync } = require("node:fs");
 const { tmpdir } = require("node:os");
-const { delimiter, resolve } = require("node:path");
+const { delimiter, join, resolve } = require("node:path");
 const { spawn } = require("node:child_process");
 const test = require("node:test");
 
@@ -51,22 +51,35 @@ function withBrowserEnvironment(overrides, callback) {
   }
 }
 
-test("browser discovery ignores an unrelated executable from BROWSER", () => {
-  const browserExecutable = withBrowserEnvironment(
-    { BROWSER: "/usr/bin/false", PATH: "" },
-    findBrowserExecutable,
-  );
+test("browser discovery uses only supported environment overrides", () => {
+  const directory = mkdtempSync(join(tmpdir(), "scrapbook-browser-discovery-"));
+  const unrelatedExecutable = join(directory, "unrelated-browser");
+  const dedicatedExecutable = join(directory, "custom-browser-build");
+  const pathExecutable = join(directory, "chromium");
 
-  assert.equal(browserExecutable, "/usr/bin/brave");
-});
+  try {
+    for (const executable of [unrelatedExecutable, dedicatedExecutable, pathExecutable]) {
+      writeFileSync(executable, "");
+      chmodSync(executable, 0o755);
+    }
 
-test("browser discovery accepts an explicit CHROME_PATH with an arbitrary basename", () => {
-  const browserExecutable = withBrowserEnvironment(
-    { BROWSER: "/usr/bin/false", CHROME_PATH: "/usr/bin/true", PATH: "" },
-    findBrowserExecutable,
-  );
-
-  assert.equal(browserExecutable, "/usr/bin/true");
+    assert.equal(
+      withBrowserEnvironment(
+        { BROWSER: unrelatedExecutable, PATH: directory },
+        findBrowserExecutable,
+      ),
+      pathExecutable,
+    );
+    assert.equal(
+      withBrowserEnvironment(
+        { BROWSER: unrelatedExecutable, CHROME_PATH: dedicatedExecutable, PATH: directory },
+        findBrowserExecutable,
+      ),
+      dedicatedExecutable,
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test("browser executable discovery finds an installed Chromium browser", (t) => {
