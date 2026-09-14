@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
   <title id="title">Sunday morning coffee</title>
-  <desc id="description">Two coffee cups rest beside an open book on a cozy checked table.</desc>
+  <desc id="description">One coffee cup rests beside an open book on a cozy checked table.</desc>
   <rect width="800" height="600" fill="#d6c7a8"/>
   <path d="M0 0h800v600H0Z" fill="#efe3ca"/>
   <path d="M0 120h800M0 240h800M0 360h800M0 480h800M160 0v600M320 0v600M480 0v600M640 0v600" stroke="#c5ad8c" stroke-width="5" opacity=".65"/>

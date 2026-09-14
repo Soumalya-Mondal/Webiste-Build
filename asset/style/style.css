@@ -536,8 +536,8 @@ footer p {
 #lightbox-close {
   position: absolute;
   z-index: 1;
-  top: -1rem;
-  right: -1rem;
+  top: var(--space-3);
+  right: var(--space-3);
   background: var(--rose-dark);
   color: white;
 }

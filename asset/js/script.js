@@ -113,7 +113,7 @@ function initializeScrapbook() {
   }
 
   function openLightbox(index) {
-    previouslyFocused = document.activeElement;
+    previouslyFocused = galleryCards[index];
     showMemory(index);
     lightbox.showModal();
     closeButton.focus();

@@ -64,6 +64,18 @@ test("every gallery card points to an existing local image", () => {
   }
 });
 
+test("coffee artwork descriptions match the single cup beside an open book", () => {
+  const html = readPage();
+  const coffeeSvg = readFileSync(resolve(projectRoot, "asset/images/memory-coffee.svg"), "utf8");
+
+  assert.match(
+    html,
+    /<img[^>]+src=["']asset\/images\/memory-coffee\.svg["'][^>]+alt=["'][^"']*one coffee cup beside an open book[^"']*["']/i,
+  );
+  assert.match(coffeeSvg, /<desc[^>]*>One coffee cup rests beside an open book[^<]*<\/desc>/i);
+  assert.doesNotMatch(coffeeSvg, /two coffee cups/i);
+});
+
 test("page does not reference remote assets", () => {
   const html = readPage();
   const assetReferences = [...html.matchAll(/\b(?:src|href)=["']([^"']+)["']/gi)].map(
@@ -95,6 +107,7 @@ test("stylesheet keeps the lightbox contained and scrollable", () => {
   assert.match(css, /#memory-lightbox::backdrop\s*\{[^}]*background\s*:\s*[^;]+;/is);
   assert.match(css, /#lightbox-image\s*\{[^}]*max-height\s*:\s*[^;]+vh\s*;/is);
   assert.match(css, /\.lightbox-controls button\s*\{[^}]*min-height\s*:\s*[^;]+;/is);
+  assert.match(css, /#lightbox-close\s*\{[^}]*top\s*:\s*var\(--space-3\)\s*;[^}]*right\s*:\s*var\(--space-3\)\s*;/is);
 });
 
 test("stylesheet removes motion when reduced motion is requested", () => {

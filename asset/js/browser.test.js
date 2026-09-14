@@ -155,6 +155,9 @@ function createCdpClient(webSocketUrl) {
         listeners.set(method, [...(listeners.get(method) || []), listener]);
       });
     },
+    on(method, listener) {
+      listeners.set(method, [...(listeners.get(method) || []), listener]);
+    },
     close() {
       socket.close();
     },
@@ -196,6 +199,22 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
   const { targetId } = await cdp.send("Target.createTarget", { url: "about:blank" });
   const { sessionId } = await cdp.send("Target.attachToTarget", { targetId, flatten: true });
   const send = (method, params) => cdp.send(method, params, sessionId);
+  const pageErrors = [];
+  const recordPageError = (message) => {
+    if (message.sessionId !== sessionId) return;
+    pageErrors.push(message.params);
+  };
+  cdp.on("Runtime.exceptionThrown", recordPageError);
+  cdp.on("Runtime.consoleAPICalled", (message) => {
+    if (message.sessionId === sessionId && message.params.type === "error") {
+      pageErrors.push(message.params);
+    }
+  });
+  cdp.on("Log.entryAdded", (message) => {
+    if (message.sessionId === sessionId && message.params.entry.level === "error") {
+      pageErrors.push(message.params);
+    }
+  });
   const evaluate = async (expression) => {
     const { result, exceptionDetails } = await send("Runtime.evaluate", {
       expression,
@@ -241,6 +260,7 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
 
   await send("Page.enable");
   await send("Runtime.enable");
+  await send("Log.enable");
   await send("Emulation.setDeviceMetricsOverride", {
     width: 1280,
     height: 800,
@@ -248,6 +268,10 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
     mobile: false,
   });
   await navigate();
+
+  await t.test("direct-file load has no uncaught exceptions or error console messages", () => {
+    assert.deepEqual(pageErrors, []);
+  });
 
   await t.test("desktop direct-file load updates the counter and renders local images", async () => {
     const state = await evaluate(`(() => ({
@@ -364,6 +388,68 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
     await send("Input.dispatchMouseEvent", { type: "mousePressed", button: "left", clickCount: 1, x: 5, y: 5 });
     await send("Input.dispatchMouseEvent", { type: "mouseReleased", button: "left", clickCount: 1, x: 5, y: 5 });
     assert.equal(await evaluate(`document.querySelector("#memory-lightbox").open`), false);
+  });
+
+  await t.test("lightbox restores focus to a programmatically activated card", async () => {
+    await navigate();
+    await evaluate(`(() => {
+      document.querySelector(".story-link").focus();
+      document.querySelectorAll(".gallery-card")[4].click();
+    })()`);
+    assert.equal(await evaluate(`document.activeElement.id`), "lightbox-close");
+
+    await key("Escape");
+    await waitFor(`document.activeElement === document.querySelectorAll(".gallery-card")[4]`);
+    assert.equal(
+      await evaluate(`document.activeElement.querySelector("span").textContent.trim()`),
+      "Our slow Sunday ritual",
+    );
+  });
+
+  await t.test("lightbox close target stays fully inside the scrollable dialog", async () => {
+    await click(".gallery-card");
+    const geometry = await evaluate(`(() => {
+      const dialog = document.querySelector("#memory-lightbox").getBoundingClientRect();
+      const content = document.querySelector(".lightbox-content").getBoundingClientRect();
+      const close = document.querySelector("#lightbox-close").getBoundingClientRect();
+      return {
+        targetIsLargeEnough: close.width >= 44 && close.height >= 44,
+        insideDialog: close.top >= dialog.top && close.right <= dialog.right,
+        insideContent: close.top >= content.top && close.right <= content.right
+      };
+    })()`);
+    assert.deepEqual(geometry, {
+      targetIsLargeEnough: true,
+      insideDialog: true,
+      insideContent: true,
+    });
+    await key("Escape");
+  });
+
+  await t.test("unavailable gallery image preserves useful alt text and its caption", async () => {
+    await navigate();
+    await evaluate(`(() => {
+      const image = document.querySelectorAll(".gallery-card")[4].querySelector("img");
+      image.src = "asset/images/unavailable-memory.svg";
+    })()`);
+    await waitFor(`(() => {
+      const image = document.querySelectorAll(".gallery-card")[4].querySelector("img");
+      return image.complete && image.naturalWidth === 0;
+    })()`);
+    const fallback = await evaluate(`(() => {
+      const card = document.querySelectorAll(".gallery-card")[4];
+      const image = card.querySelector("img");
+      const caption = card.querySelector("span");
+      const captionStyle = getComputedStyle(caption);
+      return {
+        alt: image.alt,
+        caption: caption.textContent.trim(),
+        captionVisible: captionStyle.display !== "none" && captionStyle.visibility !== "hidden"
+      };
+    })()`);
+    assert.match(fallback.alt, /one coffee cup beside an open book/i);
+    assert.equal(fallback.caption, "Our slow Sunday ritual");
+    assert.equal(fallback.captionVisible, true);
   });
 
   await t.test("mobile viewport uses narrow layouts without horizontal overflow", async () => {
