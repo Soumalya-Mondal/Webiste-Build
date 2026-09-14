@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
+  <title id="title">Sunset by the water</title>
+  <desc id="description">Two people sit together beside still water under a rose and gold sunset.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9f7890"/><stop offset=".55" stop-color="#e58d77"/><stop offset="1" stop-color="#f4ca81"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#sky)"/>
+  <circle cx="400" cy="290" r="85" fill="#ffe8a6"/>
+  <path d="M0 365q170-45 315 0t280-8 205 8v235H0Z" fill="#65878b"/>
+  <path d="M0 415q170-38 315 0t280-6 205 7" fill="none" stroke="#bdd2c7" stroke-width="9" opacity=".8"/>
+  <path d="M0 515q160-95 330-22t310-12q90-44 160-18v137H0Z" fill="#4e5e52"/>
+  <g fill="#383b38">
+    <circle cx="355" cy="418" r="31"/><path d="M312 535q6-91 43-91t43 91Z"/>
+    <circle cx="447" cy="418" r="31"/><path d="M404 535q6-91 43-91t43 91Z"/>
+  </g>
+  <path d="M372 458q28-32 57 0" fill="none" stroke="#383b38" stroke-width="20" stroke-linecap="round"/>
+  <path d="M110 150q18-18 36 0 18-18 36 0M610 115q18-18 36 0 18-18 36 0" fill="none" stroke="#5e5160" stroke-width="7" stroke-linecap="round"/>
+</svg>

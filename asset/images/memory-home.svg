@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
+  <title id="title">Our home together</title>
+  <desc id="description">A warmly lit little house rests under stars and a crescent moon.</desc>
+  <rect width="800" height="600" fill="#526270"/>
+  <circle cx="650" cy="115" r="70" fill="#f3dfaa"/>
+  <circle cx="680" cy="88" r="70" fill="#526270"/>
+  <g fill="#f3dfaa">
+    <circle cx="110" cy="100" r="7"/><circle cx="225" cy="155" r="5"/><circle cx="410" cy="85" r="7"/><circle cx="545" cy="180" r="5"/><circle cx="730" cy="235" r="7"/>
+  </g>
+  <path d="M0 480q155-80 325-10t280 0q95-40 195 20v110H0Z" fill="#35473f"/>
+  <path d="M200 330 400 175l200 155v205H200Z" fill="#d58d6f" stroke="#3f3b39" stroke-width="12"/>
+  <path d="M145 345 400 145l255 200" fill="none" stroke="#493e3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="38"/>
+  <rect x="335" y="385" width="130" height="150" rx="6" fill="#704d42"/>
+  <circle cx="438" cy="462" r="8" fill="#e9c776"/>
+  <g fill="#ffe3a0" stroke="#704d42" stroke-width="10">
+    <rect x="235" y="355" width="70" height="80"/><rect x="495" y="355" width="70" height="80"/>
+  </g>
+  <path d="M400 255c-38-48-110 8 0 85 110-77 38-133 0-85Z" fill="#f2d39a"/>
+</svg>

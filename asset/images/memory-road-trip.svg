@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
+  <title id="title">Our first road trip</title>
+  <desc id="description">A small red car follows a winding road through sunny green hills.</desc>
+  <rect width="800" height="600" fill="#c9dfdc"/>
+  <circle cx="650" cy="110" r="65" fill="#f4c76f"/>
+  <path d="M0 280Q170 170 350 290T800 250V600H0Z" fill="#96aa7e"/>
+  <path d="M0 360Q190 255 410 370T800 330V600H0Z" fill="#647f66"/>
+  <path d="M330 600q-5-145 70-230 70-79 22-178h95q53 130-38 236-64 75-57 172Z" fill="#e8d8ba"/>
+  <path d="M380 600q-1-130 65-209 63-75 21-199" fill="none" stroke="#fff8e9" stroke-dasharray="28 26" stroke-width="9"/>
+  <g transform="translate(346 322)">
+    <path d="M12 55h170l-25-48H53Z" fill="#a94f4f" stroke="#563d38" stroke-width="8"/>
+    <rect y="48" width="196" height="70" rx="20" fill="#c45f56" stroke="#563d38" stroke-width="8"/>
+    <path d="M64 17h82l17 36H45Z" fill="#dcebea"/>
+    <circle cx="45" cy="117" r="22" fill="#453b39"/><circle cx="153" cy="117" r="22" fill="#453b39"/>
+  </g>
+  <path d="M110 115l20 38 42 6-31 30 8 42-39-20-38 20 7-42-30-30 42-6Z" fill="#fff8e9" opacity=".8"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
+  <title id="title">Our first meeting</title>
+  <desc id="description">Two steaming mugs share a cafe table beneath warm hanging lights.</desc>
+  <rect width="800" height="600" fill="#f3dfc2"/>
+  <circle cx="180" cy="118" r="54" fill="#d4896a" opacity=".75"/>
+  <circle cx="620" cy="118" r="54" fill="#9aaf91" opacity=".75"/>
+  <path d="M0 420Q190 370 400 420T800 410V600H0Z" fill="#b8795f"/>
+  <rect x="120" y="386" width="560" height="36" rx="18" fill="#704b3d"/>
+  <g fill="#fff8e9" stroke="#704b3d" stroke-width="12">
+    <path d="M205 260h170v115q0 65-85 65t-85-65Z"/>
+    <path d="M425 260h170v115q0 65-85 65t-85-65Z"/>
+    <path d="M375 285q62 0 42 62-12 35-50 22" fill="none"/>
+    <path d="M595 285q62 0 42 62-12 35-50 22" fill="none"/>
+  </g>
+  <g fill="none" stroke="#fff8e9" stroke-linecap="round" stroke-width="12">
+    <path d="M270 220q-22-30 2-60"/><path d="M315 220q22-30-2-60"/>
+    <path d="M490 220q-22-30 2-60"/><path d="M535 220q22-30-2-60"/>
+  </g>
+  <path d="M400 190c-36-46-105 8 0 82 105-74 36-128 0-82Z" fill="#b95657"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
+  <title id="title">Sunday morning coffee</title>
+  <desc id="description">Two coffee cups rest beside an open book on a cozy checked table.</desc>
+  <rect width="800" height="600" fill="#d6c7a8"/>
+  <path d="M0 0h800v600H0Z" fill="#efe3ca"/>
+  <path d="M0 120h800M0 240h800M0 360h800M0 480h800M160 0v600M320 0v600M480 0v600M640 0v600" stroke="#c5ad8c" stroke-width="5" opacity=".65"/>
+  <g transform="rotate(-7 245 300)">
+    <path d="M105 205q110-32 220 18v245q-110-50-220-18Z" fill="#fffaf0" stroke="#775d4a" stroke-width="9"/>
+    <path d="M545 205q-110-32-220 18v245q110-50 220-18Z" fill="#fffaf0" stroke="#775d4a" stroke-width="9"/>
+    <path d="M325 225v240" stroke="#b99b77" stroke-width="7"/>
+    <path d="M145 265h135M145 315h125M370 265h135M380 315h125" stroke="#cdbda4" stroke-width="7"/>
+  </g>
+  <g transform="translate(500 250)">
+    <ellipse cx="85" cy="210" rx="120" ry="38" fill="#b39874" opacity=".55"/>
+    <path d="M5 40h160v135q0 62-80 62T5 175Z" fill="#c47761" stroke="#704b3d" stroke-width="11"/>
+    <path d="M165 75q80-5 70 64-7 50-73 44" fill="none" stroke="#704b3d" stroke-width="15"/>
+    <ellipse cx="85" cy="42" rx="76" ry="25" fill="#69483d"/>
+    <path d="M55 0q-28-42 5-72M108 0q28-42-5-72" fill="none" stroke="#fffaf0" stroke-linecap="round" stroke-width="12"/>
+  </g>
+</svg>
