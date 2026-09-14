@@ -5,9 +5,14 @@ const test = require("node:test");
 
 const projectRoot = resolve(__dirname, "../..");
 const htmlPath = resolve(projectRoot, "index.html");
+const stylePath = resolve(projectRoot, "asset/style/style.css");
 
 function readPage() {
   return readFileSync(htmlPath, "utf8");
+}
+
+function readStyles() {
+  return readFileSync(stylePath, "utf8");
 }
 
 test("page links the local stylesheet and script", () => {
@@ -59,4 +64,27 @@ test("page does not reference remote assets", () => {
     assetReferences.filter((reference) => /^https?:\/\//i.test(reference)).length,
     0,
   );
+});
+
+test("stylesheet provides responsive and reduced-motion layouts", () => {
+  const css = readStyles();
+
+  assert.match(css, /@media\s*\([^)]*max-width\s*:/i);
+  assert.match(css, /@media\s*\(prefers-reduced-motion\s*:\s*reduce\)/i);
+});
+
+test("stylesheet keeps keyboard focus and lightbox controls visible", () => {
+  const css = readStyles();
+
+  assert.match(css, /:focus-visible/);
+  assert.match(css, /#memory-lightbox|\.lightbox-content/);
+  assert.match(css, /#memory-lightbox::backdrop/);
+});
+
+test("stylesheet gates hidden reveal states behind JavaScript readiness", () => {
+  const css = readStyles();
+
+  assert.match(css, /\.reveal-ready\s+[^,{]*(?:timeline-entry|gallery-group|memory-notes|letter)[^,{]*\{[^}]*opacity\s*:\s*0\b/is);
+  assert.match(css, /\.reveal-ready\s+[^,{]*\.is-visible[^,{]*\{[^}]*opacity\s*:\s*1\b/is);
+  assert.doesNotMatch(css, /(?:^|})\s*\.(?:timeline-entry|gallery-group|memory-notes|letter)\s*\{[^}]*opacity\s*:\s*0\b/is);
 });
