@@ -10,10 +10,9 @@ const pageUrl = `file://${resolve(__dirname, "../..", "index.html")}`;
 function findBrowserExecutable() {
   const names = ["brave", "brave-browser", "chromium", "chromium-browser", "google-chrome"];
   const candidates = [
-    process.env.BROWSER,
-    process.env.BRAVE_PATH,
     process.env.CHROME_PATH,
     process.env.CHROMIUM_PATH,
+    process.env.BRAVE_PATH,
     ...(process.env.PATH || "").split(delimiter).flatMap((directory) =>
       names.map((name) => resolve(directory, name)),
     ),
@@ -34,6 +33,42 @@ function findBrowserExecutable() {
   });
 }
 
+function withBrowserEnvironment(overrides, callback) {
+  const names = ["BROWSER", "BRAVE_PATH", "CHROME_PATH", "CHROMIUM_PATH", "PATH"];
+  const previous = Object.fromEntries(names.map((name) => [name, process.env[name]]));
+
+  try {
+    for (const name of names) {
+      if (Object.hasOwn(overrides, name)) process.env[name] = overrides[name];
+      else delete process.env[name];
+    }
+    return callback();
+  } finally {
+    for (const [name, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+}
+
+test("browser discovery ignores an unrelated executable from BROWSER", () => {
+  const browserExecutable = withBrowserEnvironment(
+    { BROWSER: "/usr/bin/false", PATH: "" },
+    findBrowserExecutable,
+  );
+
+  assert.equal(browserExecutable, "/usr/bin/brave");
+});
+
+test("browser discovery accepts an explicit CHROME_PATH with an arbitrary basename", () => {
+  const browserExecutable = withBrowserEnvironment(
+    { BROWSER: "/usr/bin/false", CHROME_PATH: "/usr/bin/true", PATH: "" },
+    findBrowserExecutable,
+  );
+
+  assert.equal(browserExecutable, "/usr/bin/true");
+});
+
 test("browser executable discovery finds an installed Chromium browser", (t) => {
   const browserExecutable = findBrowserExecutable();
   if (!browserExecutable) {
@@ -41,7 +76,7 @@ test("browser executable discovery finds an installed Chromium browser", (t) => 
     return;
   }
   t.diagnostic(`Browser executable: ${browserExecutable}`);
-  assert.match(browserExecutable, /(?:brave|chromium|chrome)(?:-browser)?$/);
+  assert.doesNotThrow(() => accessSync(browserExecutable, constants.X_OK));
 });
 
 function delay(milliseconds) {
