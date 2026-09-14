@@ -146,6 +146,32 @@ test("formatDaysTogether preserves readable fallback content", () => {
   assert.equal(formatDaysTogether(1234), "1,234");
 });
 
+test("initialization continues when matchMedia is unavailable", () => {
+  let initialize;
+  const context = {
+    document: {
+      addEventListener(type, listener) {
+        if (type === "DOMContentLoaded") initialize = listener;
+      },
+      getElementById() {
+        return null;
+      },
+      querySelector() {
+        return null;
+      },
+      querySelectorAll() {
+        return [];
+      },
+    },
+    window: {},
+  };
+
+  vm.createContext(context);
+  vm.runInContext(readFileSync(scriptPath, "utf8"), context);
+
+  assert.doesNotThrow(() => initialize());
+});
+
 test("script includes motion-aware reveals and accessible lightbox controls", () => {
   const script = readFileSync(scriptPath, "utf8");
 

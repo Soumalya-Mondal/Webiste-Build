@@ -35,7 +35,10 @@ function formatDaysTogether(days) {
 }
 
 function initializeScrapbook() {
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const reducedMotion =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : { matches: false };
   const daysCount = document.getElementById("days-count");
   const storyLink = document.querySelector(".story-link");
   const story = document.getElementById("story");
