@@ -2,9 +2,11 @@ const assert = require("node:assert/strict");
 const { existsSync, readFileSync } = require("node:fs");
 const { resolve } = require("node:path");
 const test = require("node:test");
+const vm = require("node:vm");
 
 const projectRoot = resolve(__dirname, "../..");
 const htmlPath = resolve(projectRoot, "index.html");
+const scriptPath = resolve(projectRoot, "asset/js/script.js");
 const stylePath = resolve(projectRoot, "asset/style/style.css");
 
 function readPage() {
@@ -13,6 +15,14 @@ function readPage() {
 
 function readStyles() {
   return readFileSync(stylePath, "utf8");
+}
+
+function loadScript() {
+  const context = {};
+
+  vm.createContext(context);
+  vm.runInContext(readFileSync(scriptPath, "utf8"), context);
+  return context;
 }
 
 test("page links the local stylesheet and script", () => {
@@ -113,4 +123,41 @@ test("stylesheet gives paper-based eyebrow text readable contrast", () => {
   const css = readStyles();
 
   assert.match(css, /\.eyebrow\s*\{[^}]*color\s*:\s*var\(--rose-dark\)\s*;/is);
+});
+
+test("calculateDaysTogether counts normalized local calendar days", () => {
+  const { calculateDaysTogether } = loadScript();
+
+  assert.equal(calculateDaysTogether(new Date(2020, 0, 1), new Date(2020, 0, 2)), 1);
+  assert.equal(calculateDaysTogether(new Date(2020, 0, 1, 23, 59), new Date(2020, 0, 1, 0, 1)), 0);
+});
+
+test("calculateDaysTogether rejects future and invalid start dates", () => {
+  const { calculateDaysTogether } = loadScript();
+
+  assert.equal(calculateDaysTogether(new Date(2020, 0, 2), new Date(2020, 0, 1)), null);
+  assert.equal(calculateDaysTogether(new Date("invalid"), new Date(2020, 0, 1)), null);
+});
+
+test("formatDaysTogether preserves readable fallback content", () => {
+  const { formatDaysTogether } = loadScript();
+
+  assert.equal(formatDaysTogether(null), "Many beautiful days");
+  assert.equal(formatDaysTogether(1234), "1,234");
+});
+
+test("script includes motion-aware reveals and accessible lightbox controls", () => {
+  const script = readFileSync(scriptPath, "utf8");
+
+  for (const contract of [
+    /IntersectionObserver/,
+    /prefers-reduced-motion/,
+    /Escape/,
+    /ArrowLeft/,
+    /ArrowRight/,
+    /previouslyFocused/,
+    /focusableElements/,
+  ]) {
+    assert.match(script, contract);
+  }
 });
