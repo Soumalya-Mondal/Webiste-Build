@@ -1,11 +1,48 @@
 const assert = require("node:assert/strict");
-const { mkdtempSync, rmSync } = require("node:fs");
+const { accessSync, constants, mkdtempSync, rmSync } = require("node:fs");
 const { tmpdir } = require("node:os");
-const { resolve } = require("node:path");
+const { delimiter, resolve } = require("node:path");
 const { spawn } = require("node:child_process");
 const test = require("node:test");
 
 const pageUrl = `file://${resolve(__dirname, "../..", "index.html")}`;
+
+function findBrowserExecutable() {
+  const names = ["brave", "brave-browser", "chromium", "chromium-browser", "google-chrome"];
+  const candidates = [
+    process.env.BROWSER,
+    process.env.BRAVE_PATH,
+    process.env.CHROME_PATH,
+    process.env.CHROMIUM_PATH,
+    ...(process.env.PATH || "").split(delimiter).flatMap((directory) =>
+      names.map((name) => resolve(directory, name)),
+    ),
+    "/usr/bin/brave",
+    "/usr/bin/brave-browser",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/google-chrome",
+  ].filter(Boolean);
+
+  return candidates.find((candidate) => {
+    try {
+      accessSync(candidate, constants.X_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+}
+
+test("browser executable discovery finds an installed Chromium browser", (t) => {
+  const browserExecutable = findBrowserExecutable();
+  if (!browserExecutable) {
+    t.skip("No supported Brave, Chromium, or Chrome executable found");
+    return;
+  }
+  t.diagnostic(`Browser executable: ${browserExecutable}`);
+  assert.match(browserExecutable, /(?:brave|chromium|chrome)(?:-browser)?$/);
+});
 
 function delay(milliseconds) {
   return new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds));
@@ -21,7 +58,7 @@ async function connectToBrowser(port) {
     }
     await delay(50);
   }
-  throw new Error("Brave remote debugging endpoint did not become available");
+  throw new Error("Chromium remote debugging endpoint did not become available");
 }
 
 function createCdpClient(webSocketUrl) {
@@ -77,10 +114,16 @@ function createCdpClient(webSocketUrl) {
 }
 
 test("direct file page passes desktop, mobile, accessibility, and fallback checks", async (t) => {
+  const browserExecutable = findBrowserExecutable();
+  if (!browserExecutable) {
+    t.skip("No supported Brave, Chromium, or Chrome executable found");
+    return;
+  }
+
   const port = 12000 + Math.floor(Math.random() * 20000);
   const profile = mkdtempSync(resolve(tmpdir(), "scrapbook-brave-"));
-  const brave = spawn(
-    "/usr/bin/brave",
+  const browser = spawn(
+    browserExecutable,
     [
       "--headless=new",
       "--disable-gpu",
@@ -95,7 +138,7 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
 
   t.after(() => {
     cdp?.close();
-    brave.kill("SIGTERM");
+    browser.kill("SIGTERM");
     rmSync(profile, { recursive: true, force: true });
   });
 
@@ -171,6 +214,43 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
     assert.deepEqual(state.viewport, [1280, 800]);
     assert.equal(state.overflow, false);
     assert.equal(state.imagesLoaded, true);
+  });
+
+  await t.test("story link reaches the counter with normal smooth navigation", async () => {
+    await evaluate(`(() => {
+      const story = document.querySelector("#story");
+      const scrollIntoView = story.scrollIntoView.bind(story);
+      window.__storyScrollOptions = null;
+      story.scrollIntoView = (options) => {
+        window.__storyScrollOptions = options;
+        scrollIntoView(options);
+      };
+    })()`);
+    await click(".story-link");
+    await waitFor(`(() => {
+      const rect = document.querySelector("#days-count").getBoundingClientRect();
+      return rect.top >= 0 && rect.bottom <= innerHeight;
+    })()`);
+    assert.deepEqual(await evaluate(`window.__storyScrollOptions`), { behavior: "smooth" });
+  });
+
+  await t.test("keyboard focus has a visible computed focus indicator", async () => {
+    await navigate();
+    await key("Tab");
+    await key("Tab");
+    const focus = await evaluate(`(() => {
+      const style = getComputedStyle(document.activeElement);
+      return {
+        className: document.activeElement.className,
+        focusVisible: document.activeElement.matches(":focus-visible"),
+        outlineStyle: style.outlineStyle,
+        outlineWidth: parseFloat(style.outlineWidth)
+      };
+    })()`);
+    assert.equal(focus.className, "story-link");
+    assert.equal(focus.focusVisible, true);
+    assert.notEqual(focus.outlineStyle, "none");
+    assert.ok(focus.outlineWidth > 0);
   });
 
   await t.test("lightbox matches cards, cycles, closes, traps focus, and restores focus", async () => {
@@ -283,17 +363,34 @@ test("direct file page passes desktop, mobile, accessibility, and fallback check
       features: [{ name: "prefers-reduced-motion", value: "reduce" }],
     });
     await navigate();
+    await evaluate(`(() => {
+      const story = document.querySelector("#story");
+      const scrollIntoView = story.scrollIntoView.bind(story);
+      window.__storyScrollOptions = null;
+      story.scrollIntoView = (options) => {
+        window.__storyScrollOptions = options;
+        scrollIntoView(options);
+      };
+    })()`);
+    await click(".story-link");
     const state = await evaluate(`(() => ({
       preference: matchMedia("(prefers-reduced-motion: reduce)").matches,
       revealReady: document.documentElement.classList.contains("reveal-ready"),
       opacity: getComputedStyle(document.querySelector(".timeline-entry")).opacity,
       transition: getComputedStyle(document.querySelector(".timeline-entry")).transitionDuration,
-      scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior
+      scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+      requestedScroll: window.__storyScrollOptions,
+      counterInViewport: (() => {
+        const rect = document.querySelector("#days-count").getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= innerHeight;
+      })()
     }))()`);
     assert.equal(state.preference, true);
     assert.equal(state.revealReady, false);
     assert.equal(state.opacity, "1");
     assert.equal(state.transition, "0s");
     assert.equal(state.scrollBehavior, "auto");
+    assert.deepEqual(state.requestedScroll, { behavior: "auto" });
+    assert.equal(state.counterInViewport, true);
   });
 });
