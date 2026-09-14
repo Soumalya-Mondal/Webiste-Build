@@ -66,8 +66,9 @@ a {
 }
 
 :focus-visible {
-  outline: 0.2rem solid #2d675e;
-  outline-offset: 0.3rem;
+  outline: 0.2rem solid white;
+  outline-offset: 0.15rem;
+  box-shadow: 0 0 0 0.4rem var(--ink) !important;
 }
 
 .skip-link {
@@ -145,7 +146,7 @@ a {
 
 .eyebrow {
   margin: 0 0 var(--space-1);
-  color: var(--terracotta);
+  color: var(--rose-dark);
   font-family: "Segoe Print", "Bradley Hand", cursive;
   font-size: 0.88rem;
   font-weight: 700;
@@ -483,7 +484,7 @@ footer p {
   max-height: 92vh;
   padding: 0;
   border: 0;
-  overflow: visible;
+  overflow: auto;
   background: transparent;
   color: var(--ink);
 }
@@ -572,6 +573,14 @@ footer p {
   transform: translateY(0);
 }
 
+.reveal-ready .timeline-entry:nth-child(odd).is-visible {
+  transform: rotate(-1deg);
+}
+
+.reveal-ready .timeline-entry:nth-child(even).is-visible {
+  transform: rotate(1deg);
+}
+
 @media (max-width: 48rem) {
   :root {
     --space-5: 3rem;
@@ -614,6 +623,14 @@ footer p {
 
   .timeline-entry:nth-child(n) {
     justify-self: stretch;
+    transform: none;
+  }
+
+  .reveal-ready .timeline-entry:nth-child(n) {
+    transform: translateY(2rem);
+  }
+
+  .reveal-ready .timeline-entry:nth-child(n).is-visible {
     transform: none;
   }
 
@@ -691,10 +708,9 @@ footer p {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition: none !important;
   }
 
   .story-link,

@@ -66,19 +66,37 @@ test("page does not reference remote assets", () => {
   );
 });
 
-test("stylesheet provides responsive and reduced-motion layouts", () => {
+test("stylesheet provides a responsive narrow-screen layout", () => {
   const css = readStyles();
 
-  assert.match(css, /@media\s*\([^)]*max-width\s*:/i);
-  assert.match(css, /@media\s*\(prefers-reduced-motion\s*:\s*reduce\)/i);
+  assert.match(css, /@media\s*\([^)]*max-width\s*:[^)]*\)\s*\{[\s\S]*?\.story-section\s*\{[^}]*grid-template-columns\s*:\s*1fr\b/i);
 });
 
-test("stylesheet keeps keyboard focus and lightbox controls visible", () => {
+test("stylesheet uses a two-tone keyboard focus indicator", () => {
   const css = readStyles();
 
-  assert.match(css, /:focus-visible/);
-  assert.match(css, /#memory-lightbox|\.lightbox-content/);
-  assert.match(css, /#memory-lightbox::backdrop/);
+  assert.match(css, /:focus-visible\s*\{[^}]*outline\s*:\s*(?!none\b)[^;]+;[^}]*outline-offset\s*:\s*(?!0(?:\D|$))[^;]+;[^}]*box-shadow\s*:\s*0\s+0\s+0\s+[^;]+!important\s*;/is);
+});
+
+test("stylesheet keeps the lightbox contained and scrollable", () => {
+  const css = readStyles();
+
+  assert.match(css, /#memory-lightbox\s*\{[^}]*max-height\s*:\s*(?:9[0-9]|[1-8][0-9])vh\s*;[^}]*overflow(?:-y)?\s*:\s*auto\s*;/is);
+  assert.match(css, /#memory-lightbox::backdrop\s*\{[^}]*background\s*:\s*[^;]+;/is);
+  assert.match(css, /#lightbox-image\s*\{[^}]*max-height\s*:\s*[^;]+vh\s*;/is);
+  assert.match(css, /\.lightbox-controls button\s*\{[^}]*min-height\s*:\s*[^;]+;/is);
+});
+
+test("stylesheet removes motion when reduced motion is requested", () => {
+  const css = readStyles();
+  const reducedMotion = css.slice(css.search(/@media\s*\(prefers-reduced-motion\s*:\s*reduce\)/i));
+
+  assert.notEqual(reducedMotion, "", "expected a reduced-motion media query");
+  assert.match(reducedMotion, /animation\s*:\s*none\s*!important\s*;/i);
+  assert.match(reducedMotion, /transition\s*:\s*none\s*!important\s*;/i);
+  assert.match(reducedMotion, /scroll-behavior\s*:\s*auto\s*!important\s*;/i);
+  assert.match(reducedMotion, /transform\s*:\s*none\s*;/i);
+  assert.doesNotMatch(reducedMotion, /0\.01ms/i);
 });
 
 test("stylesheet gates hidden reveal states behind JavaScript readiness", () => {
@@ -87,4 +105,12 @@ test("stylesheet gates hidden reveal states behind JavaScript readiness", () => 
   assert.match(css, /\.reveal-ready\s+[^,{]*(?:timeline-entry|gallery-group|memory-notes|letter)[^,{]*\{[^}]*opacity\s*:\s*0\b/is);
   assert.match(css, /\.reveal-ready\s+[^,{]*\.is-visible[^,{]*\{[^}]*opacity\s*:\s*1\b/is);
   assert.doesNotMatch(css, /(?:^|})\s*\.(?:timeline-entry|gallery-group|memory-notes|letter)\s*\{[^}]*opacity\s*:\s*0\b/is);
+  assert.match(css, /\.reveal-ready\s+\.timeline-entry:nth-child\(odd\)\.is-visible\s*\{[^}]*transform\s*:\s*rotate\(-1deg\)\s*;/is);
+  assert.match(css, /\.reveal-ready\s+\.timeline-entry:nth-child\(even\)\.is-visible\s*\{[^}]*transform\s*:\s*rotate\(1deg\)\s*;/is);
+});
+
+test("stylesheet gives paper-based eyebrow text readable contrast", () => {
+  const css = readStyles();
+
+  assert.match(css, /\.eyebrow\s*\{[^}]*color\s*:\s*var\(--rose-dark\)\s*;/is);
 });
