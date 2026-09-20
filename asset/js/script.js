@@ -44,7 +44,7 @@ function initializeScrapbook() {
   const story = document.getElementById("story");
 
   if (daysCount) {
-    const startDate = new Date(2020, 0, 1);
+    const startDate = new Date(2026, 5, 1);
     daysCount.textContent = formatDaysTogether(calculateDaysTogether(startDate, new Date()));
   }
 
